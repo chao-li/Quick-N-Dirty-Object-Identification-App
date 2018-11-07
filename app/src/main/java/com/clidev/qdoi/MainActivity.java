@@ -75,17 +75,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        // if it was the location request
-        if (requestCode == RequestCodes.FINE_LOCATION_REQUEST_CODE) {
-            if (grantResults.length > 0) {
-                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    // Take user back to previous activity
-                    onBackPressed();
-                    //Intent intent = new Intent(CameraActivity.this, MainAppActivity.class);
-                    //startActivity(intent);
-                }
-            }
-        }
     }
 
 
@@ -208,8 +197,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             showProgressBar();
             Timber.d("taking image");
             mCameraView.captureImage();
-
+        } else {
+            Toast.makeText(MainActivity.this, "Camera initating, please try again in a few seconds.", Toast.LENGTH_SHORT).show();
         }
+
     }
 
     private void hideUploadCancelSwitch() {
