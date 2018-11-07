@@ -1,5 +1,6 @@
 package com.clidev.qdoi;
 
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
@@ -33,7 +35,9 @@ import com.wonderkiln.camerakit.CameraKit;
 import com.wonderkiln.camerakit.CameraKitImage;
 import com.wonderkiln.camerakit.CameraView;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -62,9 +66,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @BindView(R.id.cam_activity_flash_off) ImageView mFlashOff;
     @BindView(R.id.cam_activity_flash_on) ImageView mFlashOn;
     @BindView(R.id.cam_activity_cam_rotate) ImageView mCamRotate;
-    @BindView(R.id.cam_activity_rotate_left) ImageView mRotateLeft;
-    @BindView(R.id.cam_activity_rotate_right) ImageView mRotateRight;
-    @BindView(R.id.prediction) TextView mPrediction;
+   // @BindView(R.id.cam_activity_rotate_left) ImageView mRotateLeft;
+    //@BindView(R.id.cam_activity_rotate_right) ImageView mRotateRight;
+    //@BindView(R.id.prediction) TextView mPrediction;
 
 
     @Override
@@ -111,8 +115,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mFlashOn.setOnClickListener(this);
         mFlashOff.setOnClickListener(this);
         mCamRotate.setOnClickListener(this);
-        mRotateLeft.setOnClickListener(this);
-        mRotateRight.setOnClickListener(this);
+        //mRotateLeft.setOnClickListener(this);
+        //mRotateRight.setOnClickListener(this);
 
         // set camera event listener
         mCameraView.addCameraKitListener(new CameraKitUtility(this));
@@ -152,7 +156,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-
     // When buttons are clicked.
     @Override
     public void onClick(View view) {
@@ -162,15 +165,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
 
-
-            case R.id.cam_activity_cancel_button:
-
-                backToCameraMode();
-                break;
-
-
             case R.id.cam_activity_flash_off:
-
                 // turn flash on
                 mFlashOff.setVisibility(View.INVISIBLE);
                 mFlashOn.setVisibility(View.VISIBLE);
@@ -197,25 +192,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
 
-            case R.id.cam_activity_rotate_left:
-                Timber.d("clicked rotate left");
-
-                Bitmap bitmapLeft = rotateBitmap(mBitmap, -90);
-
-                Glide.with(MainActivity.this).load(bitmapLeft).into(mConfirmPhotoImageView);
-
-                mBitmap = bitmapLeft;
-                break;
-
-            case R.id.cam_activity_rotate_right:
-                Timber.d("clicked rotate left");
-
-                Bitmap bitmapRight = rotateBitmap(mBitmap, 90);
-
-                Glide.with(MainActivity.this).load(bitmapRight).into(mConfirmPhotoImageView);
-
-                mBitmap = bitmapRight;
-                break;
 
 
             default:
@@ -229,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void capturePhotoIfReady() {
         if (canTakePicture == true) {
-
+            showProgressBar();
             Timber.d("taking image");
             mCameraView.captureImage();
 
@@ -237,11 +213,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void hideUploadCancelSwitch() {
-        mUploadButton.setVisibility(View.INVISIBLE);
-        mCancelButton.setVisibility(View.INVISIBLE);
-        mPrivacySwitch.setVisibility(View.INVISIBLE);
-        mPublicText.setVisibility(View.INVISIBLE);
-        mPrivateText.setVisibility(View.INVISIBLE);
+        //mUploadButton.setVisibility(View.INVISIBLE);
+        //mCancelButton.setVisibility(View.INVISIBLE);
+        //mPrivacySwitch.setVisibility(View.INVISIBLE);
+        //mPublicText.setVisibility(View.INVISIBLE);
+        //mPrivateText.setVisibility(View.INVISIBLE);
     }
 
     private void showProgressBar() {
@@ -264,11 +240,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         // show upload or cancel buttons and privacy switch
-        mUploadButton.setVisibility(View.VISIBLE);
-        mCancelButton.setVisibility(View.VISIBLE);
-        mPrivacySwitch.setVisibility(View.VISIBLE);
-        mPublicText.setVisibility(View.VISIBLE);
-        mPrivateText.setVisibility(View.VISIBLE);
+        //mUploadButton.setVisibility(View.VISIBLE);
+        //mCancelButton.setVisibility(View.VISIBLE);
+        //mPrivacySwitch.setVisibility(View.VISIBLE);
+        //mPublicText.setVisibility(View.VISIBLE);
+        //mPrivateText.setVisibility(View.VISIBLE);
     }
 
     private void hideProgressBar() {
@@ -335,21 +311,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 new OnSuccessListener<List<FirebaseVisionLabel>>() {
                                     @Override
                                     public void onSuccess(List<FirebaseVisionLabel> labels) {
+                                        hideProgressBar();
                                         String text = "";
+                                       // Map<String, Float> prediction = new HashMap<>();
                                         for (FirebaseVisionLabel label: labels) {
+                                            String name = label.getLabel();
+                                            Float confidence = label.getConfidence();
+                                            confidence = confidence * 100;
+                                            String confidenceStr = String.format ("%.0f", confidence);
+
                                             if (text.isEmpty()) {
-
-                                                text = label.getLabel() + " : " + label.getConfidence() + "\n";
-
+                                                text = name + " : " + confidenceStr + "%\n";
                                             } else {
-
-                                                text = text + label.getLabel() + " : " + label.getConfidence() + "\n";
-
+                                                text = text + name + " : " + confidenceStr + "%\n";
                                             }
+
                                         }
+
+                                        backToCameraMode();
+
+                                        // show prediction with dialog box
+                                        new AlertDialog.Builder(MainActivity.this)
+                                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                                .setTitle("Predictions are:")
+                                                .setMessage(text)
+                                                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                                                    }
+                                                })
+                                                .show();
+
+
+
+                                        /*
                                         Timber.d(text);
                                         mPrediction.setText(text);
                                         Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
+                                        */
                                     }
                                 })
                         .addOnFailureListener(
@@ -358,6 +358,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     public void onFailure(@NonNull Exception e) {
                                         // Task failed with an exception
                                         // ...
+                                        hideProgressBar();
+                                        backToCameraMode();
                                     }
                                 });
 
@@ -367,23 +369,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-    private void uploadSuccessBackToCam() {
-        // code for when photo is successfully uploaded
-        backToCameraMode();
-    }
-
-    private void uploadFailBackToCam() {
-        // code for when photo failed to upload
-        backToCameraMode();
-
-    }
-
+    /*
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
 
     }
+    */
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
