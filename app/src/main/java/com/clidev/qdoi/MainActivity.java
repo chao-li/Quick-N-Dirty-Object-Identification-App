@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private Boolean isCameraMode;
     private Boolean canTakePicture;
-    private Bitmap mBitmap;
+    //private Bitmap mBitmap;
     private Boolean isCamFacingFront;
 
 
@@ -269,7 +269,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void goToConfirmImageMode(CameraKitImage cameraKitImage) {
-        mBitmap = CompressBitmapUtil.getResizedBitmap(cameraKitImage.getBitmap(), 500);
+        Bitmap originalImage = cameraKitImage.getBitmap();
+        Bitmap compressedImage = CompressBitmapUtil.getResizedBitmap(cameraKitImage.getBitmap(), 500);
 
         // turn off camera
         mCameraView.stop();
@@ -286,12 +287,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         options.dontAnimate();
 
         Glide.with(MainActivity.this)
-                .load(mBitmap)
+                .load(compressedImage)
                 .apply(options)
                 .into(mConfirmPhotoImageView);
 
         // run ML
-        FirebaseVisionImage image = FirebaseVisionImage.fromBitmap(mBitmap);
+        FirebaseVisionImage image = FirebaseVisionImage.fromBitmap(originalImage);
 
         FirebaseVisionLabelDetector detector = FirebaseVision.getInstance()
                 .getVisionLabelDetector();
